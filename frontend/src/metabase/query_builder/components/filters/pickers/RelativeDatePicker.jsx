@@ -10,6 +10,7 @@ import type {
   TimeIntervalFilter,
   RelativeDatetimeUnit,
 } from "metabase-types/types/Query";
+import { getMaxRangeDaysFromToken, convertToDays } from "metabase/query_builder/components/filters/pickers/Utils";
 
 export const DATE_PERIODS: RelativeDatetimeUnit[] = [
   "day",
@@ -46,6 +47,18 @@ export default class RelativeDatePicker extends Component {
     formatter: value => value,
   };
 
+  validateRangeWithinLimit = (intervals, unit) => {
+    const maxDays = getMaxRangeDaysFromToken?.();
+    const totalDays = convertToDays(intervals, unit);
+
+    if (maxDays && totalDays > maxDays) {
+      alert(`You can only select up to ${maxDays} days.`);
+      return false;
+    }
+
+    return true;
+  };
+
   render() {
     const { filter, onFilterChange, formatter, className } = this.props;
     const intervals = filter[2];
@@ -65,7 +78,12 @@ export default class RelativeDatePicker extends Component {
           value={
             typeof intervals === "number" ? Math.abs(intervals) : intervals
           }
-          onChange={value => onFilterChange(assoc(filter, 2, formatter(value)))}
+          onChange={value => {
+            const updatedInterval = formatter(value);
+            if (this.validateRangeWithinLimit(updatedInterval, unit)) {
+              onFilterChange(assoc(filter, 2, updatedInterval));
+            }
+          }}
           placeholder="30"
         />
         <div className="flex-full">
@@ -73,8 +91,10 @@ export default class RelativeDatePicker extends Component {
             open={this.state.showUnits}
             value={unit}
             onChange={value => {
-              onFilterChange(assoc(filter, 3, value));
-              this.setState({ showUnits: false });
+              if (this.validateRangeWithinLimit(intervals, value)) {
+                onFilterChange(assoc(filter, 3, value));
+                this.setState({ showUnits: false });
+              }
             }}
             togglePicker={() =>
               this.setState({ showUnits: !this.state.showUnits })

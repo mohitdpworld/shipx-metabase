@@ -8,6 +8,7 @@ import cx from "classnames";
 import moment from "moment";
 import { t } from "ttag";
 import Icon from "metabase/components/Icon";
+import { getMaxRangeDaysFromToken } from "metabase/query_builder/components/filters/pickers/Utils";
 
 export default class Calendar extends Component {
   constructor(props) {
@@ -61,18 +62,29 @@ export default class Calendar extends Component {
 
   onClickDay = date => {
     const { selected, selectedEnd, isRangePicker } = this.props;
+    const maxDays = getMaxRangeDaysFromToken?.();
+  
     if (!isRangePicker || !selected || selectedEnd) {
       this.props.onChange(date.format("YYYY-MM-DD"), null);
     } else if (!selectedEnd) {
-      if (date.isAfter(selected)) {
+      const start = moment(selected);
+      const end = moment(date);
+      const daysDiff = Math.abs(end.diff(start, "days")) + 1;
+  
+      if (maxDays && daysDiff > maxDays) {
+        alert(`You can only select up to ${maxDays} days`);
+        return;
+      }
+  
+      if (date.isAfter(start)) {
         this.props.onChange(
-          selected.format("YYYY-MM-DD"),
-          date.format("YYYY-MM-DD"),
+          start.format("YYYY-MM-DD"),
+          end.format("YYYY-MM-DD")
         );
       } else {
         this.props.onChange(
-          date.format("YYYY-MM-DD"),
-          selected.format("YYYY-MM-DD"),
+          end.format("YYYY-MM-DD"),
+           start.format("YYYY-MM-DD")
         );
       }
     }

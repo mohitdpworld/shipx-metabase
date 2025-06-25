@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import { t } from "ttag";
 import cx from "classnames";
 import _ from "underscore";
+import { getMaxRangeDaysFromToken } from "metabase/query_builder/components/filters/pickers/Utils";
 
 const SHORTCUTS = [
   {
@@ -201,6 +202,23 @@ export default class DateRelativeWidget extends Component {
         <PredefinedRelativeDatePicker
           filter={FILTERS[value] ? FILTERS[value].mapping : [null, null]}
           onFilterChange={filter => {
+            const maxDays = getMaxRangeDaysFromToken?.();
+
+            // Defensive: check that it's a time-interval filter
+            if (filter?.[0] === "time-interval" && maxDays != null) {
+              const interval = filter?.[2];
+              const unit = filter?.[3];
+
+              // Only validate if interval is numeric and unit is valid
+              if (typeof interval === "number" && typeof unit === "string") {
+                const totalDays = convertToDays(Math.abs(interval), unit);
+
+                if (totalDays > maxDays) {
+                  alert(`You can only select up to ${maxDays} days.`);
+                  return;
+                }
+              }
+            }
             setValue(_.findKey(FILTERS, f => _.isEqual(f.mapping, filter)));
             onClose();
           }}

@@ -7,6 +7,7 @@ import moment from "moment";
 import _ from "underscore";
 import cx from "classnames";
 import { t } from "ttag";
+import { getMaxRangeDaysFromToken } from "metabase/query_builder/components/filters/pickers/Utils";
 
 // translator: this is a "moment" format string (https://momentjs.com/docs/#/displaying/format/) It should include "Q" for the quarter number, and raw text can be escaped by brackets. For eample "[Quarter] Q" will be rendered as "Quarter 1" etc
 const QUARTER_FORMAT_STRING = t`[Q]Q`;
@@ -40,10 +41,18 @@ export default class DateQuarterYearWidget extends Component {
   componentWillUnmount() {
     const { quarter, year } = this.state;
     if (quarter != null && year != null) {
-      const value = moment()
-        .year(year)
-        .quarter(quarter)
-        .format("[Q]Q-YYYY");
+      const start = moment().year(year).quarter(quarter).startOf("quarter");
+      const end = moment(start).endOf("quarter");
+  
+      const rangeInDays = end.diff(start, "days") + 1;
+      const maxDays = getMaxRangeDaysFromToken?.();
+  
+      if (maxDays && rangeInDays > maxDays) {
+        alert(`You can only select up to ${maxDays} days.`);
+        return;
+      }
+  
+      const value = start.format("[Q]Q-YYYY");
       if (this.props.value !== value) {
         this.props.setValue(value);
       }

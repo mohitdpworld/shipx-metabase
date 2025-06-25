@@ -6,6 +6,7 @@ import { Flex } from "grid-styled";
 import moment from "moment";
 import _ from "underscore";
 import cx from "classnames";
+import { getMaxRangeDaysFromToken } from "metabase/query_builder/components/filters/pickers/Utils";
 
 export default class DateMonthYearWidget extends React.Component {
   constructor(props, context) {
@@ -36,10 +37,18 @@ export default class DateMonthYearWidget extends React.Component {
   componentWillUnmount() {
     const { month, year } = this.state;
     if (month != null && year != null) {
-      const value = moment()
-        .year(year)
-        .month(month)
-        .format("YYYY-MM");
+      const start = moment().year(year).month(month).startOf("month");
+      const end = moment(start).endOf("month");
+  
+      const rangeInDays = end.diff(start, "days") + 1;
+      const maxDays = getMaxRangeDaysFromToken?.();
+  
+      if (maxDays && rangeInDays > maxDays) {
+        alert(`You can only select up to ${maxDays} days.`);
+        return;
+      }
+  
+      const value = start.format("YYYY-MM");
       if (this.props.value !== value) {
         this.props.setValue(value);
       }
