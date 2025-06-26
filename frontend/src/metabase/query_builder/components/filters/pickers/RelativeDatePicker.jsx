@@ -10,7 +10,11 @@ import type {
   TimeIntervalFilter,
   RelativeDatetimeUnit,
 } from "metabase-types/types/Query";
-import { getMaxRangeDaysFromToken, convertToDays } from "metabase/query_builder/components/filters/pickers/Utils";
+
+import {
+  getMaxRangeDaysFromToken,
+  convertToDays,
+} from "metabase/query_builder/components/filters/pickers/Utils";
 
 export const DATE_PERIODS: RelativeDatetimeUnit[] = [
   "day",
@@ -33,14 +37,15 @@ type Props = {
 
 type State = {
   showUnits: boolean,
+  lastValidIntervals: number,
+  lastValidUnit: RelativeDatetimeUnit,
 };
 
-export default class RelativeDatePicker extends Component {
-  props: Props;
-  state: State;
-
+export default class RelativeDatePicker extends Component<Props, State> {
   state = {
     showUnits: false,
+    lastValidIntervals: this.props.filter[2],
+    lastValidUnit: this.props.filter[3],
   };
 
   static defaultProps = {
@@ -55,12 +60,40 @@ export default class RelativeDatePicker extends Component {
       alert(`You can only select up to ${maxDays} days.`);
       return false;
     }
-
     return true;
   };
 
+  handleIntervalChange = (value: any) => {
+    const { filter, onFilterChange, formatter } = this.props;
+    const unit = filter[3];
+    const updatedInterval = formatter(value);
+
+    if (this.validateRangeWithinLimit(updatedInterval, unit)) {
+      this.setState({ lastValidIntervals: updatedInterval });
+      onFilterChange(assoc(filter, 2, updatedInterval));
+    } else {
+      onFilterChange(assoc(filter, 2, this.state.lastValidIntervals));
+    }
+  };
+
+  handleUnitChange = (value: RelativeDatetimeUnit) => {
+    const { filter, onFilterChange } = this.props;
+    const intervals = filter[2];
+
+    if (this.validateRangeWithinLimit(intervals, value)) {
+      this.setState({
+        showUnits: false,
+        lastValidUnit: value,
+      });
+      onFilterChange(assoc(filter, 3, value));
+    } else {
+      onFilterChange(assoc(filter, 3, this.state.lastValidUnit));
+      this.setState({ showUnits: false });
+    }
+  };
+
   render() {
-    const { filter, onFilterChange, formatter, className } = this.props;
+    const { filter, className } = this.props;
     const intervals = filter[2];
     const unit = filter[3];
     return (
@@ -69,7 +102,6 @@ export default class RelativeDatePicker extends Component {
           className="mr2 input border-purple text-right"
           style={{
             width: 65,
-            // needed to match Select's AdminSelect classes :-/
             fontSize: 14,
             fontWeight: 700,
             padding: 8,
@@ -78,29 +110,19 @@ export default class RelativeDatePicker extends Component {
           value={
             typeof intervals === "number" ? Math.abs(intervals) : intervals
           }
-          onChange={value => {
-            const updatedInterval = formatter(value);
-            if (this.validateRangeWithinLimit(updatedInterval, unit)) {
-              onFilterChange(assoc(filter, 2, updatedInterval));
-            }
-          }}
+          onChange={this.handleIntervalChange}
           placeholder="30"
         />
         <div className="flex-full">
           <DateUnitSelector
             open={this.state.showUnits}
             value={unit}
-            onChange={value => {
-              if (this.validateRangeWithinLimit(intervals, value)) {
-                onFilterChange(assoc(filter, 3, value));
-                this.setState({ showUnits: false });
-              }
-            }}
+            onChange={this.handleUnitChange}
             togglePicker={() =>
               this.setState({ showUnits: !this.state.showUnits })
             }
             intervals={intervals}
-            formatter={formatter}
+            formatter={this.props.formatter}
             periods={ALL_PERIODS}
           />
         </div>

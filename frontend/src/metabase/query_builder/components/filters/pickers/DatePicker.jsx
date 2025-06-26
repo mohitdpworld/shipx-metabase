@@ -139,7 +139,7 @@ class CurrentPicker extends Component {
           const totalDays = convertToDays(1, newUnit);
 
           if (maxDays > 0 && totalDays > maxDays) {
-            alert(`You can only select a range of up to ${maxDays} days.`);
+            alert(`You can only select up to ${maxDays} days.`);
             return;
           }
 
