@@ -10,7 +10,7 @@ import RelativeDatePicker, { DATE_PERIODS } from "./RelativeDatePicker";
 import DateOperatorSelector from "../DateOperatorSelector";
 import DateUnitSelector from "../DateUnitSelector";
 import Calendar from "metabase/components/Calendar";
-import { getMaxRangeDaysFromToken } from "metabase/query_builder/components/filters/pickers/Utils";
+import { getMaxRangeDaysFromToken, convertToDays } from "metabase/query_builder/components/filters/pickers/Utils";
 
 import { FieldDimension } from "metabase-lib/lib/Dimension";
 
@@ -135,8 +135,13 @@ class CurrentPicker extends Component {
         className={className}
         value={unit}
         open={this.state.showUnits}
-        onChange={value => {
-          onFilterChange([operator, field, intervals, value]);
+        onChange={(newUnit) => {
+          const totalDays = convertToDays(1, newUnit);
+          if (maxDays > 0 && totalDays > maxDays) {
+            alert(`You can only select up to ${maxDays} days.`);
+            return;
+          }
+          onFilterChange([operator, field, intervals, newUnit]);
           this.setState({ showUnits: false });
         }}
         togglePicker={() => this.setState({ showUnits: !this.state.showUnits })}

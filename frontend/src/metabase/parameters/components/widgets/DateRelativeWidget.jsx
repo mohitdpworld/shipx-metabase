@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 import { t } from "ttag";
 import cx from "classnames";
 import _ from "underscore";
-import { getMaxRangeDaysFromToken } from "metabase/query_builder/components/filters/pickers/Utils";
+import { getMaxRangeDaysFromToken, convertToDays } from "metabase/query_builder/components/filters/pickers/Utils";
 
 const SHORTCUTS = [
   {
@@ -216,7 +216,7 @@ export default class DateRelativeWidget extends Component {
                   (interval === "last" || interval === "current") &&
                   typeof unit === "string"
                 ) {
-                  totalDays = convertToDays(1, unit); // Treat "last"/"current" as 1 unit
+                  totalDays = convertToDays(1, unit);
                 }
           
                 if (totalDays > maxDays) {

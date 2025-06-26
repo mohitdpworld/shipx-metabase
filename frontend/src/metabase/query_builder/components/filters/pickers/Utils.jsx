@@ -1,7 +1,7 @@
 // utils/token.js
 
 export const accessLevelToMaxDaysMap = {
-  1: 30,
+  1: 31,
   2: 10,
   3: 7,
   4: 5,
@@ -85,15 +85,18 @@ export function isDateRestrictedVersionEnabled() {
 }
 
 export const convertToDays = (intervals, unit) => {
+  const numericInterval =
+    typeof intervals === "number" ? Math.abs(intervals) : 1;
+
   switch (unit) {
     case "day":
-      return intervals;
+      return numericInterval;
     case "week":
-      return intervals * 7;
+      return numericInterval * 7;
     case "month":
-      return intervals * 30;
+      return numericInterval * 30;
     case "year":
-      return intervals * 365;
+      return numericInterval * 365;
     case "minute":
     case "hour":
       return 0;
