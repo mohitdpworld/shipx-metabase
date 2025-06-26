@@ -203,25 +203,32 @@ export default class DateRelativeWidget extends Component {
           filter={FILTERS[value] ? FILTERS[value].mapping : [null, null]}
           onFilterChange={filter => {
             const maxDays = getMaxRangeDaysFromToken?.();
-
-            // Defensive: check that it's a time-interval filter
             if (filter?.[0] === "time-interval" && maxDays != null) {
               const interval = filter?.[2];
               const unit = filter?.[3];
-
-              // Only validate if interval is numeric and unit is valid
-              if (typeof interval === "number" && typeof unit === "string") {
-                const totalDays = convertToDays(Math.abs(interval), unit);
-
+          
+              if (typeof unit === "string") {
+                let totalDays;
+          
+                if (typeof interval === "number") {
+                  totalDays = convertToDays(Math.abs(interval), unit);
+                } else if (
+                  (interval === "last" || interval === "current") &&
+                  typeof unit === "string"
+                ) {
+                  totalDays = convertToDays(1, unit); // Treat "last"/"current" as 1 unit
+                }
+          
                 if (totalDays > maxDays) {
                   alert(`You can only select up to ${maxDays} days.`);
                   return;
                 }
               }
             }
+          
             setValue(_.findKey(FILTERS, f => _.isEqual(f.mapping, filter)));
             onClose();
-          }}
+          }}          
         />
       </div>
     );
