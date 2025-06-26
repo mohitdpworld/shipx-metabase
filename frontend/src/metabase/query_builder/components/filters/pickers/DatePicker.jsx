@@ -135,15 +135,8 @@ class CurrentPicker extends Component {
         className={className}
         value={unit}
         open={this.state.showUnits}
-        onChange={(newUnit) => {
-          const totalDays = convertToDays(1, newUnit);
-
-          if (maxDays > 0 && totalDays > maxDays) {
-            alert(`You can only select up to ${maxDays} days.`);
-            return;
-          }
-
-          onFilterChange([operator, field, intervals, newUnit]);
+        onChange={value => {
+          onFilterChange([operator, field, intervals, value]);
           this.setState({ showUnits: false });
         }}
         togglePicker={() => this.setState({ showUnits: !this.state.showUnits })}
@@ -155,7 +148,7 @@ class CurrentPicker extends Component {
 }
 
 const getIntervals = ([op, field, value, unit]) =>
-  op === "time-interval" && typeof value === "number" ? Math.abs(value) : 30;
+  op === "time-interval" && typeof value === "number" ? Math.abs(value) : 1;
 const getUnit = ([op, field, value, unit]) =>
   op === "time-interval" && unit ? unit : "day";
 const getOptions = ([op, field, value, unit, options]) =>

@@ -54,7 +54,7 @@ export default class RelativeDatePicker extends Component<Props, State> {
 
   validateRangeWithinLimit = (intervals, unit) => {
     const maxDays = getMaxRangeDaysFromToken?.();
-    const totalDays = convertToDays(intervals, unit);
+    const totalDays = convertToDays(Math.abs(intervals), unit);
 
     if (maxDays && totalDays > maxDays) {
       alert(`You can only select up to ${maxDays} days.`);
@@ -111,7 +111,7 @@ export default class RelativeDatePicker extends Component<Props, State> {
             typeof intervals === "number" ? Math.abs(intervals) : intervals
           }
           onChange={this.handleIntervalChange}
-          placeholder="30"
+          placeholder="1"
         />
         <div className="flex-full">
           <DateUnitSelector
