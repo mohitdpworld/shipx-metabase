@@ -43,15 +43,50 @@ const SingleDatePicker = ({
   filter: [op, field, value],
   onFilterChange,
   hideTimeSelectors,
-}) => (
-  <SpecificDatePicker
-    className={className}
-    value={value}
-    onChange={value => onFilterChange([op, field, value])}
-    hideTimeSelectors={hideTimeSelectors}
-    calendar
-  />
-);
+}) => {
+  const maxDays = getMaxRangeDaysFromToken?.();
+
+  const handleChange = (newValue) => {
+    if (!maxDays) {
+      onFilterChange([op, field, newValue]);
+      return;
+    }
+
+    const selectedDate = moment(newValue, ["YYYY-MM-DD", "YYYY-MM-DDTHH:mm:ss"], true);
+
+    if (selectedDate.isValid()) {
+      const today = moment().startOf("day");
+      const selected = selectedDate.startOf("day");
+
+      if (op === "<") {
+        const diffDays = today.diff(selected, "days");
+        if (diffDays > maxDays) {
+          alert(`Please select a date within the past ${maxDays} days.`);
+          return;
+        }
+      } else if (op === ">") {
+        const futureDiff = selected.diff(today, "days");
+        if (futureDiff > maxDays) {
+          alert(`Please select a date within the next ${maxDays} days.`);
+          return;
+        }
+      }
+    }
+
+    onFilterChange([op, field, newValue]);
+  };
+
+  return (
+    <SpecificDatePicker
+      className={className}
+      value={value}
+      onChange={handleChange}
+      hideTimeSelectors={hideTimeSelectors}
+      calendar
+    />
+  );
+};
+
 
 SingleDatePicker.propTypes = singleDatePickerPropTypes;
 
