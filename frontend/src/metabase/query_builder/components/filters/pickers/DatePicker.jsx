@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { useState, Component } from "react";
 import PropTypes from "prop-types";
 import { t } from "ttag";
 import cx from "classnames";
@@ -45,33 +45,39 @@ const SingleDatePicker = ({
   hideTimeSelectors,
 }) => {
   const maxDays = getMaxRangeDaysFromToken?.();
-
+  const [lastValidValue, setLastValidValue] = useState(value);
   const handleChange = (newValue) => {
     if (!maxDays) {
+      setLastValidValue(newValue);
       onFilterChange([op, field, newValue]);
       return;
     }
 
     const selectedDate = moment(newValue, ["YYYY-MM-DD", "YYYY-MM-DDTHH:mm:ss"], true);
+    if (!selectedDate.isValid()) {
+      setLastValidValue(newValue);
+      onFilterChange([op, field, newValue]);
+      return;
+    }
 
     if (selectedDate.isValid()) {
       const today = moment().startOf("day");
       const selected = selectedDate.startOf("day");
 
-      if (op === "<") {
-        const diffDays = today.diff(selected, "days");
-        if (diffDays > maxDays) {
-          alert(`Please select a date within the past ${maxDays} days.`);
-          return;
-        }
-      } else if (op === ">") {
-        const futureDiff = selected.diff(today, "days");
-        if (futureDiff > maxDays) {
-          alert(`Please select a date within the next ${maxDays} days.`);
-          return;
-        }
+      const diff = selected.diff(today, "days");
+
+      if (op === "<" && (diff >= 0 || Math.abs(diff) > maxDays)) {
+        alert(`Please select a date within the past ${maxDays} days.`);
+        return;
+      }
+
+      if (op === ">" && (diff <= 0 || diff > maxDays)) {
+        alert(`Please select a date within the next ${maxDays} days.`);
+        return;
       }
     }
+    setLastValidValue(newValue);
+
 
     onFilterChange([op, field, newValue]);
   };
@@ -79,7 +85,7 @@ const SingleDatePicker = ({
   return (
     <SpecificDatePicker
       className={className}
-      value={value}
+      value={lastValidValue}
       onChange={handleChange}
       hideTimeSelectors={hideTimeSelectors}
       calendar
