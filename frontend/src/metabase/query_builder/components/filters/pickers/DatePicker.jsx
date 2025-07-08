@@ -55,30 +55,27 @@ const SingleDatePicker = ({
 
     const selectedDate = moment(newValue, ["YYYY-MM-DD", "YYYY-MM-DDTHH:mm:ss"], true);
     if (!selectedDate.isValid()) {
-      setLastValidValue(newValue);
-      onFilterChange([op, field, newValue]);
+      onFilterChange([op, field, lastValidValue]);
       return;
     }
 
-    if (selectedDate.isValid()) {
-      const today = moment().startOf("day");
-      const selected = selectedDate.startOf("day");
+    const today = moment().startOf("day");
+    const selected = selectedDate.startOf("day");
 
-      const diff = selected.diff(today, "days");
+    const diff = selected.diff(today, "days");
 
-      if (op === "<" && (diff >= 0 || Math.abs(diff) > maxDays)) {
-        alert(`Please select a date within the past ${maxDays} days.`);
-        return;
-      }
+    if (op === "<" && (diff >= 0 || Math.abs(diff) > maxDays)) {
+      alert(`Please select a date within the past ${maxDays} days.`);
+      onFilterChange([op, field, lastValidValue]);
+      return;
+    }
 
-      if (op === ">" && (diff <= 0 || diff > maxDays)) {
-        alert(`Please select a date within the next ${maxDays} days.`);
-        return;
-      }
+    if (op === ">" && (diff <= 0 || diff > maxDays)) {
+      alert(`Please select a date within the next ${maxDays} days.`);
+      onFilterChange([op, field, lastValidValue]);
+      return;
     }
     setLastValidValue(newValue);
-
-
     onFilterChange([op, field, newValue]);
   };
 
