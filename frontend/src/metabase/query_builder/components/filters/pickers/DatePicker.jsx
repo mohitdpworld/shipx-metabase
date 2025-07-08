@@ -255,8 +255,6 @@ export type OperatorName =
   | "previous"
   | "next"
   | "current"
-  | "before"
-  | "after"
   | "on"
   | "between"
   | "empty"
@@ -320,20 +318,20 @@ export const DATE_OPERATORS: Operator[] = [
     test: ([op, field, value]) => op === "time-interval" && value === "current",
     widget: CurrentPicker,
   },
-  {
-    name: "before",
-    displayName: t`Before`,
-    init: filter => ["<", ...getDateTimeFieldAndValues(filter, 1)],
-    test: ([op]) => op === "<",
-    widget: SingleDatePicker,
-  },
-  {
-    name: "after",
-    displayName: t`After`,
-    init: filter => [">", ...getDateTimeFieldAndValues(filter, 1)],
-    test: ([op]) => op === ">",
-    widget: SingleDatePicker,
-  },
+  // {
+  //   name: "before",
+  //   displayName: t`Before`,
+  //   init: filter => ["<", ...getDateTimeFieldAndValues(filter, 1)],
+  //   test: ([op]) => op === "<",
+  //   widget: SingleDatePicker,
+  // },
+  // {
+  //   name: "after",
+  //   displayName: t`After`,
+  //   init: filter => [">", ...getDateTimeFieldAndValues(filter, 1)],
+  //   test: ([op]) => op === ">",
+  //   widget: SingleDatePicker,
+  // },
   {
     name: "on",
     displayName: t`On`,
